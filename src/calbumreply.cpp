@@ -19,6 +19,7 @@
 #include <QTimer>
 #include <json.h>
 #include "consts.h"
+#include <QDebug>
 
 CAlbumReply::CAlbumReply(CVk *vk, QObject *parent)
     : QObject(parent)
@@ -37,6 +38,7 @@ CAlbumReply::CAlbumReply(CVk *vk, QObject *parent)
 
     m_vk = vk;
     m_reply = 0;
+    m_state = None;
 }
 
 void CAlbumReply::setOwnerId(int ownerId)
@@ -51,23 +53,63 @@ void CAlbumReply::setAlbumId(int albumId)
 
 void CAlbumReply::start()
 {
-    QFile file(":/vkscript/get_photos.vks");
-    file.open(QIODevice::ReadOnly);
-    execute(QString::fromUtf8(file.readAll()).arg(m_ownerId).arg(m_albumId));
+    abort();
+    m_aborted = false;
+    m_state = None;
+    next_state();
 }
 
 void CAlbumReply::processResponse(const QVariant &response)
 {
-    QVariantMap responseMap = response.toMap();
-    m_ownerName = QString::fromUtf8(responseMap.value("owner_name").toByteArray());
-    m_albumName = QString::fromUtf8(responseMap.value("album_name").toByteArray());
-    m_dateTime = QDateTime::fromTime_t(responseMap.value("updated_time").toInt());
-    m_isGroup = responseMap.value("is_goup").toBool();
-
-    m_photoList.clear();
-    foreach (const QVariant &photoLink, responseMap.value("photo_list").toList())
+    if (m_state == WaitOwnerName)
     {
-        m_photoList.push_back(photoLink.toString());
+        if (m_isGroup)
+        {
+            m_ownerName = QString::fromUtf8(response.toList().value(0).toMap().value("name").toByteArray());
+        }
+        else
+        {
+            m_ownerName = QString::fromUtf8(response.toList().value(0).toMap().value("first_name").toByteArray()) +
+                    " " + QString::fromUtf8(response.toList().value(0).toMap().value("last_name").toByteArray());
+        }
+    }
+    else if (m_state == WaitAlbumName)
+    {
+        QVariantMap albumMap = response.toMap().value("items").toList().value(0).toMap();
+        m_albumName = QString::fromUtf8(albumMap.value("title").toByteArray());
+        m_dateTime = QDateTime::fromTime_t(albumMap.value("updated").toInt());
+    }
+    else if (m_state == WaitPhotoList)
+    {
+        QList<QVariant> photoList = response.toMap().value("items").toList();
+        foreach (QVariant photo, photoList)
+        {
+            QVariantMap map = photo.toMap();
+            if (map.contains("photo_2560"))
+            {
+                m_photoList.push_back(map.value("photo_2560").toString());
+            }
+            else if (map.contains("photo_1280"))
+            {
+                m_photoList.push_back(map.value("photo_1280").toString());
+            }
+            else if (map.contains("photo_807"))
+            {
+                m_photoList.push_back(map.value("photo_807").toString());
+            }
+            else if (map.contains("photo_604"))
+            {
+                m_photoList.push_back(map.value("photo_604").toString());
+            }
+            else if (map.contains("photo_130"))
+            {
+                m_photoList.push_back(map.value("photo_130").toString());
+            }
+            else if (map.contains("photo_75"))
+            {
+                m_photoList.push_back(map.value("photo_75").toString());
+            }
+        }
     }
 }
 
@@ -101,6 +143,42 @@ void CAlbumReply::abort()
     }
 }
 
+void CAlbumReply::next_state()
+{
+    if (!m_aborted)
+    {
+        if (m_state == None)
+        {
+            m_state = WaitOwnerName;
+            if (m_ownerId < 0)
+            {
+                m_isGroup = true;
+                ownerAsGroup();
+            }
+            else
+            {
+                m_isGroup = false;
+                ownerAsUser();
+            }
+        }
+        else if (m_state == WaitOwnerName)
+        {
+            m_state = WaitAlbumName;
+            getAlbumInfo();
+        }
+        else if (m_state == WaitAlbumName)
+        {
+            m_state = WaitPhotoList;
+            getPhotoList();
+        }
+        else
+        {
+            m_state = End;
+            emit finished();
+        }
+    }
+}
+
 void CAlbumReply::reply_finished()
 {
     bool isRetry = false; // true if we activete the timer
@@ -115,13 +193,26 @@ void CAlbumReply::reply_finished()
             // "too many request per second" -- sleep 0.5 second and try again
             if (errorCode == 6)
             {
-                QTimer::singleShot(m_vk->retryApiInterval(), this, SLOT(start()));
+                QTimer::singleShot(m_vk->retryApiInterval(), this, SLOT(next_state()));
                 isRetry = true;
+                if (m_state == WaitOwnerName)
+                {
+                    m_state = None;
+                }
+                else if (m_state == WaitAlbumName)
+                {
+                    m_state = WaitOwnerName;
+                }
+                else if (m_state == WaitPhotoList)
+                {
+                    m_state = WaitAlbumName;
+                }
             }
             // the another error is fatal, no chance for correct them
             else
             {
                 QString errorMsg = replyVariant.value("error").toMap().value("error_msg").toString();
+                m_state = End;
                 m_hasError = true;
                 m_errorString = QString("%1: %2").arg(errorCode).arg(errorMsg);
             }
@@ -135,16 +226,109 @@ void CAlbumReply::reply_finished()
     // may be network problem?
     else if (m_reply->error() != QNetworkReply::OperationCanceledError)
     {
-        QTimer::singleShot(m_vk->retryNetworkInterval(), this, SLOT(start()));
+        QTimer::singleShot(m_vk->retryNetworkInterval(), this, SLOT(next_state()));
         isRetry = true;
+        if (m_state == WaitOwnerName)
+        {
+            m_state = None;
+        }
+        else if (m_state == WaitAlbumName)
+        {
+            m_state = WaitOwnerName;
+        }
+        else if (m_state == WaitPhotoList)
+        {
+            m_state = WaitAlbumName;
+        }
     }
 
     m_reply->deleteLater();
     m_reply = 0;
 
-    // if timer is active
     if (!isRetry)
     {
-        emit finished();
+        QMetaObject::invokeMethod(this, "next_state", Qt::QueuedConnection);
     }
+}
+
+void CAlbumReply::ownerAsGroup()
+{
+    m_hasError = false;
+    m_errorString = QString();
+
+    QUrl apiUrl = QUrl(QString("https://api.vk.com/method/groups.getById"));
+    apiUrl.addQueryItem("group_id", QString::number(-m_ownerId));
+    apiUrl.addQueryItem("v", g_protocolVersion);
+    if (!m_vk->accessToken().isEmpty())
+        apiUrl.addQueryItem("access_token", m_vk->accessToken());
+
+    QNetworkRequest request;
+    request.setUrl(apiUrl);
+    request.setRawHeader("User-Agent", g_userAgent);
+    m_reply = m_vk->apiNetwork()->get(request);
+
+    connect(m_reply, SIGNAL(finished()), this, SLOT(reply_finished()));
+    connect(this, SIGNAL(destroyed()), m_reply, SLOT(deleteLater()));
+}
+
+void CAlbumReply::ownerAsUser()
+{
+    m_hasError = false;
+    m_errorString = QString();
+
+    QUrl apiUrl = QUrl(QString("https://api.vk.com/method/users.get"));
+    apiUrl.addQueryItem("user_ids", QString::number(m_ownerId));
+    apiUrl.addQueryItem("v", g_protocolVersion);
+    if (!m_vk->accessToken().isEmpty())
+        apiUrl.addQueryItem("access_token", m_vk->accessToken());
+
+    QNetworkRequest request;
+    request.setUrl(apiUrl);
+    request.setRawHeader("User-Agent", g_userAgent);
+    m_reply = m_vk->apiNetwork()->get(request);
+
+    connect(m_reply, SIGNAL(finished()), this, SLOT(reply_finished()));
+    connect(this, SIGNAL(destroyed()), m_reply, SLOT(deleteLater()));
+}
+
+void CAlbumReply::getAlbumInfo()
+{
+    m_hasError = false;
+    m_errorString = QString();
+
+    QUrl apiUrl = QUrl(QString("https://api.vk.com/method/photos.getAlbums"));
+    apiUrl.addQueryItem("owner_id", QString::number(m_ownerId));
+    apiUrl.addQueryItem("album_ids", QString::number(m_albumId));
+    apiUrl.addQueryItem("v", g_protocolVersion);
+    if (!m_vk->accessToken().isEmpty())
+        apiUrl.addQueryItem("access_token", m_vk->accessToken());
+
+    QNetworkRequest request;
+    request.setUrl(apiUrl);
+    request.setRawHeader("User-Agent", g_userAgent);
+    m_reply = m_vk->apiNetwork()->get(request);
+
+    connect(m_reply, SIGNAL(finished()), this, SLOT(reply_finished()));
+    connect(this, SIGNAL(destroyed()), m_reply, SLOT(deleteLater()));
+}
+
+void CAlbumReply::getPhotoList()
+{
+    m_hasError = false;
+    m_errorString = QString();
+
+    QUrl apiUrl = QUrl(QString("https://api.vk.com/method/photos.get"));
+    apiUrl.addQueryItem("owner_id", QString::number(m_ownerId));
+    apiUrl.addQueryItem("album_id", QString::number(m_albumId));
+    apiUrl.addQueryItem("v", g_protocolVersion);
+    if (!m_vk->accessToken().isEmpty())
+        apiUrl.addQueryItem("access_token", m_vk->accessToken());
+
+    QNetworkRequest request;
+    request.setUrl(apiUrl);
+    request.setRawHeader("User-Agent", g_userAgent);
+    m_reply = m_vk->apiNetwork()->get(request);
+
+    connect(m_reply, SIGNAL(finished()), this, SLOT(reply_finished()));
+    connect(this, SIGNAL(destroyed()), m_reply, SLOT(deleteLater()));
 }

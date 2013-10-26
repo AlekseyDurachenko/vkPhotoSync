@@ -22,6 +22,7 @@
 class CAlbumReply : public QObject
 {
     Q_OBJECT
+    enum State { None = 0, WaitOwnerName = 1, WaitAlbumName = 2, WaitPhotoList = 3, End = 4 };
 public:
     explicit CAlbumReply(CVk *vk, QObject *parent = 0);
 
@@ -47,9 +48,14 @@ public slots:
     void abort();
 
 private slots:
+    void next_state();
     void reply_finished();
 
 protected:
+    void ownerAsGroup();
+    void ownerAsUser();
+    void getAlbumInfo();
+    void getPhotoList();
     void execute(const QString &code);
     void processResponse(const QVariant &response);
 
@@ -68,6 +74,7 @@ private:
 
     CVk *m_vk;
     QNetworkReply *m_reply;
+    State m_state;
 
 };
 
