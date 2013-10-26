@@ -1,0 +1,52 @@
+var owner_id = %1;
+var album_id = %2;
+var is_group = 0;
+var owner_name;
+if (owner_id < 0)
+{
+    is_group = 1;
+    owner_name = API.groups.getById({group_id: -owner_id})@.name[0];
+}
+else
+{
+    var user_info = API.users.get({user_ids:owner_id});
+    owner_name = user_info@.first_name[0] + " " + user_info@.last_name[0];
+}
+var album = API.photos.getAlbums({owner_id: owner_id, album_ids: album_id});
+var album_name = album.items@.title[0];
+var created_time = album.items@.created[0];
+var updated_time = album.items@.updated[0];
+var photo_list = [];
+var photo_items = API.photos.get({album_id: album_id, owner_id: owner_id}).items;
+var index = 0;
+while (index < photo_items.length)
+{
+    if (parseInt(photo_items[index].photo_2560.length) > 0)
+    {
+        photo_list = photo_list + [photo_items[index].photo_2560];
+    }
+    else if (parseInt(photo_items[index].photo_1280.length) > 0)
+    {
+        photo_list = photo_list + [photo_items[index].photo_1280];
+    }
+    else if (parseInt(photo_items[index].photo_807.length) > 0)
+    {
+        photo_list = photo_list + [photo_items[index].photo_807];
+    }
+    else if (parseInt(photo_items[index].photo_604.length) > 0)
+    {
+        photo_list = photo_list + [photo_items[index].photo_604];
+    }
+    else if (parseInt(photo_items[index].photo_130.length) > 0)
+    {
+        photo_list = photo_list + [photo_items[index].photo_130];
+    }
+    else if (parseInt(photo_items[index].photo_75.length) > 0)
+    {
+        photo_list = photo_list + [photo_items[index].photo_75];
+    }
+    index = index + 1;
+}
+
+return {is_group: is_group, owner_name: owner_name, album_name: album_name,
+        created_time: created_time, updated_time: updated_time, photo_list: photo_list};

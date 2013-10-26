@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>vkscript/get_photos.vks</file>
+        <file>vkscript/who_am_i.vks</file>
+    </qresource>
+</RCC>

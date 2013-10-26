@@ -1,0 +1,2 @@
+var user_info = API.users.get();
+return user_info@.first_name[0] + " " + user_info@.last_name[0];
