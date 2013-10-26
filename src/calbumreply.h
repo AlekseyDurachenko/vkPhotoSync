@@ -15,11 +15,11 @@
 #ifndef CALBUMREPLY_H
 #define CALBUMREPLY_H
 
-#include "cbasereply.h"
 #include <QDateTime>
 #include <QStringList>
+#include "cvk.h"
 
-class CAlbumReply : public CBaseReply
+class CAlbumReply : public QObject
 {
     Q_OBJECT
 public:
@@ -35,10 +35,22 @@ public:
     inline const QStringList &photoList() const;
     inline bool isGroup() const; // is owner a group?
 
+    inline bool hasError() const;
+    inline const QString &errorString() const;
+    inline bool isAborted() const;
+
+signals:
+    void finished();
+
 public slots:
     void start();
+    void abort();
+
+private slots:
+    void reply_finished();
 
 protected:
+    void execute(const QString &code);
     void processResponse(const QVariant &response);
 
 private:
@@ -49,6 +61,13 @@ private:
     QDateTime m_dateTime;
     QStringList m_photoList;
     bool m_isGroup;
+
+    bool m_aborted;
+    bool m_hasError;
+    QString m_errorString;
+
+    CVk *m_vk;
+    QNetworkReply *m_reply;
 
 };
 
@@ -85,6 +104,21 @@ const QStringList &CAlbumReply::photoList() const
 bool CAlbumReply::isGroup() const
 {
     return m_isGroup;
+}
+
+bool CAlbumReply::hasError() const
+{
+    return m_hasError;
+}
+
+const QString &CAlbumReply::errorString() const
+{
+    return m_errorString;
+}
+
+bool CAlbumReply::isAborted() const
+{
+    return m_aborted;
 }
 
 #endif // CALBUMREPLY_H
