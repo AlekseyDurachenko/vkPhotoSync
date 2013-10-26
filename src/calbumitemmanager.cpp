@@ -164,7 +164,15 @@ void CAlbumItemManager::processNextDownload()
             if (album->state() == CAlbumItem::Downloading)
             {
                 QString url = album->nextUnprocessedPhoto();
-                QString fileName = album->outputDirectory() + QDir::separator() + QUrl(url).path().replace("/", "_");
+                if (url.isEmpty())
+                {
+                    break;
+                }
+
+                QStringList url_path = QUrl(url).path().split("/");
+                QString fileName = album->outputDirectory() + QDir::separator() +
+                        url_path.at(url_path.count()-3) + "_" + url_path.at(url_path.count()-2) +
+                        "_" + url_path.at(url_path.count()-1);
 
                 CFileDownloader *downloader = new CFileDownloader(m_vk, this);
                 downloader->setProperty("owner_id", album->ownerId());
