@@ -38,6 +38,7 @@ public:
     CAlbumItem *value(int index) const;
     void start(int index);
     void pause(int index);
+    void update(int index);
 
 signals:
     void removed(int first, int last);

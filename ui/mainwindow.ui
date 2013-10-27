@@ -70,6 +70,7 @@
     <addaction name="action_Start"/>
     <addaction name="action_Pause"/>
     <addaction name="separator"/>
+    <addaction name="action_Relocate"/>
     <addaction name="action_Delete"/>
     <addaction name="separator"/>
     <addaction name="action_DecreasePriority"/>
@@ -251,6 +252,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+=</string>
+   </property>
+  </action>
+  <action name="action_Relocate">
+   <property name="text">
+    <string>&amp;Relocate...</string>
    </property>
   </action>
  </widget>

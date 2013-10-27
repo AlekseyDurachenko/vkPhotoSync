@@ -23,6 +23,7 @@
 #include "calbumadddialog.h"
 #include "csettingsdialog.h"
 #include "caboutdialog.h"
+#include "crelocatedialog.h"
 #include "global.h"
 
 CMainWindow::CMainWindow(QWidget *parent) :
@@ -394,7 +395,12 @@ void CMainWindow::on_album_treeView_customContextMenuRequested(const QPoint &)
     menu.addSeparator();
     menu.addAction(ui->action_Start);
     menu.addAction(ui->action_Pause);
+    menu.addSeparator();
+    menu.addAction(ui->action_Relocate);
     menu.addAction(ui->action_Delete);
+    menu.addSeparator();
+    menu.addAction(ui->action_IncreasePriority);
+    menu.addAction(ui->action_DecreasePriority);
     menu.exec(QCursor::pos());
 }
 
@@ -438,4 +444,32 @@ void CMainWindow::updateButtons()
     ui->action_Delete->setEnabled(ui->album_treeView->selectionModel()->selectedRows().count());
     ui->action_IncreasePriority->setEnabled(ui->album_treeView->selectionModel()->selectedRows().count());
     ui->action_DecreasePriority->setEnabled(ui->album_treeView->selectionModel()->selectedRows().count());
+    ui->action_Relocate->setEnabled(ui->album_treeView->selectionModel()->selectedRows().count());
+}
+
+void CMainWindow::on_action_Relocate_triggered()
+{
+    CRelocateDialog relocateDialog(this);
+    if (ui->album_treeView->selectionModel()->selectedRows().count() == 1)
+    {
+        relocateDialog.setOutputDirectory(m_albumManager->value(ui->album_treeView
+                ->selectionModel()->selectedRows().first().row())->outputDirectory());
+    }
+    if (relocateDialog.exec() == CRelocateDialog::Accepted)
+    {
+        int first = ui->album_treeView->selectionModel()->selectedRows().first().row();
+        int last = ui->album_treeView->selectionModel()->selectedRows().last().row();
+        for (int index = last; index >= first; --index)
+        {
+            m_albumManager->value(index)->setOutputDirectory(relocateDialog.outputDirectory());
+            if (relocateDialog.isAutoRestart())
+            {
+                m_albumManager->start(index);
+            }
+            else
+            {
+                m_albumManager->update(index);
+            }
+        }
+    }
 }

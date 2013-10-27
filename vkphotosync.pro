@@ -61,6 +61,7 @@ HEADERS        +=                                           \
     src/cbasereply.h                                        \
     src/csettingsdialog.h                                   \
     src/caboutdialog.h                                      \
+    src/crelocatedialog.h                                   \
 
 SOURCES        +=                                           \
     libs/qt-json/json.cpp                                   \
@@ -80,6 +81,7 @@ SOURCES        +=                                           \
     src/cbasereply.cpp                                      \
     src/csettingsdialog.cpp                                 \
     src/caboutdialog.cpp                                    \
+    src/crelocatedialog.cpp                                 \
 
 
 FORMS          +=                                           \
@@ -88,6 +90,7 @@ FORMS          +=                                           \
     ui/authdialog.ui                                        \
     ui/settingsdialog.ui                                    \
     ui/aboutdialog.ui                                       \
+    ui/relocatedialog.ui                                    \
 
 RESOURCES      +=                                           \
     qrc/about.qrc                                           \

@@ -56,6 +56,8 @@ private slots:
     void slot_SystemTrayIcon_activated(QSystemTrayIcon::ActivationReason);
     void updateButtons();
 
+    void on_action_Relocate_triggered();
+
 private:
     void saveSettings();
     void loadSettings();

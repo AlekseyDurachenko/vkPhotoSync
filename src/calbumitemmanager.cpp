@@ -129,6 +129,11 @@ void CAlbumItemManager::pause(int index)
     emit dataChanged(index);
 }
 
+void CAlbumItemManager::update(int index)
+{
+    emit dataChanged(index);
+}
+
 void CAlbumItemManager::processNextAlbum()
 {
     // the other album is processing, this slot will be called anyway
