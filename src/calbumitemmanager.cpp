@@ -108,7 +108,16 @@ CAlbumItem *CAlbumItemManager::value(int index) const
 
 void CAlbumItemManager::start(int index)
 {
-    m_albumItemList.value(index)->setState(CAlbumItem::Updating);
+    CAlbumItem *album = m_albumItemList.value(index);
+    album->setState(CAlbumItem::Updating);
+    foreach (CFileDownloader *downloader, m_fileDownloaders)
+    {
+        if (album->ownerId() == downloader->property("owner_id").toInt() &&
+                album->albumId() == downloader->property("album_id").toInt())
+        {
+            downloader->abort();
+        }
+    }
     emit dataChanged(index);
 
     processNextAlbum();
