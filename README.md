@@ -3,6 +3,8 @@ vkPhotoSync
 
 VKontakte Album Downloader
 
+![Screenshot](https://raw.github.com/AlekseyDurachenko/vkPhotoSync/master/screenshot.png)
+
 Compiling
 ---------
 
