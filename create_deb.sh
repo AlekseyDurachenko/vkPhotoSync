@@ -37,12 +37,14 @@ chmod 0644 debian_package/usr/share/pixmaps/vkphotosync.png
 
 VER=`git describe --match=v* HEAD --tags`
 VER=`echo $VER| sed 's/^v//'`
+SIZE=`du -cb ./debian_package/usr | grep total | awk '{print int($1/1024)}'`
 
 echo "Package: vkphotosync
 Version: $VER
 Section: net
 Priority: optional
 Architecture: amd64
+Installed-Size: $SIZE
 Depends: libc6 (>= 2.14), libgcc1 (>= 1:4.1.1), libqt4-webkit (>= 4:4.8.0), libqt4-network (>= 4:4.8.0), libqt4-xml (>= 4:4.8.0), libqtcore4 (>= 4:4.8.0), libqtgui4 (>= 4:4.8.0)
 Homepage: https://github.com/AlekseyDurachenko/vkPhotoSync
 Maintainer: Aleksey Durachenko <durachenko.aleksey@gmail.com>
