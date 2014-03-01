@@ -27,8 +27,10 @@ CAlbumAddDialog::CAlbumAddDialog(QWidget *parent)
 {
     ui->setupUi(this);
     ui->buttonBox->buttons().value(0)->setEnabled(false);
-    connect(ui->ownerId_spinBox, SIGNAL(valueChanged(int)), SLOT(slot_id_changed()));
-    connect(ui->albumId_spinBox, SIGNAL(valueChanged(int)), SLOT(slot_id_changed()));
+    connect(ui->ownerId_spinBox, SIGNAL(valueChanged(int)),
+            this, SLOT(slot_id_changed()));
+    connect(ui->albumId_spinBox, SIGNAL(valueChanged(int)),
+            this, SLOT(slot_id_changed()));
     m_rxAlbum.setPattern("^(http://){0,1}vk.com/.*album([-]{0,1}[0-9]{1,})_([0-9]{1,})$");
 
     // try to paste link from clipboard
@@ -70,7 +72,8 @@ bool CAlbumAddDialog::isAutoStart() const
 void CAlbumAddDialog::on_downloadDirectory_toolButton_clicked()
 {
     QString dirname = QFileDialog::getExistingDirectory(this,
-        tr("Select the download directory"), ui->downloadDirectory_lineEdit->text(), QFileDialog::ShowDirsOnly);
+            tr("Select the download directory"),
+            ui->downloadDirectory_lineEdit->text(), QFileDialog::ShowDirsOnly);
 
     if (!dirname.isEmpty())
     {        
@@ -95,7 +98,7 @@ void CAlbumAddDialog::on_link_lineEdit_textChanged(const QString &text)
 void CAlbumAddDialog::slot_id_changed()
 {
     ui->buttonBox->buttons().value(0)->setEnabled(
-            ui->albumId_spinBox->value() && ui->albumId_spinBox->value());
+            ui->ownerId_spinBox->value() && ui->albumId_spinBox->value());
 }
 
 void CAlbumAddDialog::accept()

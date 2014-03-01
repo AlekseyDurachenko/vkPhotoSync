@@ -1,4 +1,4 @@
-// Copyright 2013, Durachenko Aleksey V. <durachenko.aleksey@gmail.com>
+// Copyright 2013-2014, Durachenko Aleksey V. <durachenko.aleksey@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 #define CONSTS_H
 
 const char g_userAgent[] = "vkPhotoSync/1.0";
-const char g_protocolVersion[] = "5.2";
+const char g_protocolVersion[] = "5.12";
 const int g_defaultAppId = 1;
 const int g_defaultMaximumDownloads = 5;
 const int g_defaultRetryApiInterval = 500;

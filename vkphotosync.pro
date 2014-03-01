@@ -1,4 +1,4 @@
-# Copyright 2013, Durachenko Aleksey V. <durachenko.aleksey@gmail.com>
+# Copyright 2013-2014, Durachenko Aleksey V. <durachenko.aleksey@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 # project options
 TARGET          = vkphotosync
 TEMPLATE        = app
-VERSION         = 0.1
+VERSION         = 0.1.1
 DESTDIR         = bin
 
 # build options

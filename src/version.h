@@ -1,4 +1,4 @@
-// Copyright 2013, Durachenko Aleksey V. <durachenko.aleksey@gmail.com>
+// Copyright 2013-2014, Durachenko Aleksey V. <durachenko.aleksey@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,16 +19,16 @@
 
 const int g_versionMajor = 0;
 const int g_versionMinor = 1;
-const int g_versionBuild = 0;
-const int g_versionYear  = 2013;
-const int g_versionMonth = 10;
-const int g_verstionDay  = 26;
-const char g_versionStatusShort[]    = "";
+const int g_versionBuild = 1;
+const int g_versionYear  = 2014;
+const int g_versionMonth = 3;
+const int g_verstionDay  = 1;
+const char g_versionStatusShort[]    = "dev";
 const char g_programName[]   = "vkPhotoSync";
 const char g_projectFamily[] = "vkTools";
 const char g_projectName[]   = "vkPhotoSync";
 const char g_authors[] = "Durachenko Aleksey V. &lt;durachenko.aleksey@gmail.com&gt;";
 const char g_authorsConsole[] = "Durachenko Aleksey V. <durachenko.aleksey@gmail.com>";
-const char g_years[] = "2013";
+const char g_years[] = "2013-2014";
 
 #endif
