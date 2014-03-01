@@ -101,7 +101,7 @@ OTHER_FILES    +=                                           \
     AUTHORS                                                 \
     CHANGELOG                                               \
     LICENSE                                                 \
-    README                                                  \
+    README.md                                               \
 
 # if you want to test the project, do: qmake "QT += testlib"
 contains(QT, testlib) {

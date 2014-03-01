@@ -16,3 +16,12 @@ Compiling
     # starting:
     ./bin/vkphotosync
 
+
+3rd libraries:
+--------------
+* Qt - http://qt-project.org/
+* Qt-Json - https://github.com/ereilin/qt-json
+
+Icons:
+------
+* http://openiconlibrary.sourceforge.net/
